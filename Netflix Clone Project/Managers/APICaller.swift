@@ -10,6 +10,8 @@ import Foundation
 struct Constants {
     static let API_KEY = "1b617daef0238a132b45ac764be15582"
     static let baseURL = "https://api.themoviedb.org"
+    static let youtubeAPI_KEY = "AIzaSyAnUfoQGipLQrdlcUQsbtZtlAoC8CBKe7w"
+    static let youtubeBaseURL = "https://youtube.googleapis.com/youtube/v3/search?"
 }
 
 enum APIerror: Error {
@@ -109,6 +111,70 @@ class APICaller {
                 
             } catch {
                 completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    //https://api.themoviedb.org/3/discover/movie?api_key=<<api_key>>&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_watch_monetization_types=flatrate
+    func getDiscoverMovies(completion: @escaping (Result<[Movie], Error>) -> Void) {
+        guard let url = URL(string: "\(Constants.baseURL)/3/discover/movie?api_key=\(Constants.API_KEY)&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_watch_monetization_types=flatrate") else {return}
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
+                completion(.success(results.results))
+                //print(results)
+                
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    func search(with query: String, completion: @escaping (Result<[Movie], Error>) -> Void) {
+       //https://api.themoviedb.org/3/search/movie?api_key={api_key}&query=Jack+Reacher
+        //used to encode the search term so that it can be safely included in a URL without causing issues such as invalid characters or injection attacks.
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {return}
+        guard let url = URL(string: "\(Constants.baseURL)/3/search/movie?api_key=\(Constants.API_KEY)&query=\(query)") else {return}
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
+                completion(.success(results.results))
+                //print(results)
+                
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    //GET https://youtube.googleapis.com/youtube/v3/search?q=harry%20potter&key=[YOUR_API_KEY] HTTP/1.1
+    func getMovie(with query: String, completion: @escaping (Result<VideoElement, Error>) -> Void)  {
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {return}
+        guard let url = URL(string: "\(Constants.youtubeBaseURL)q=\(query)&key=\(Constants.youtubeAPI_KEY)") else {return}
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                let results = try JSONDecoder().decode(Youtube.self, from: data)
+                completion(.success(results.items[0]))
+                print(results)
+                
+            } catch {
+                completion(.failure(error))
+                print(error.localizedDescription)
             }
         }
         task.resume()
