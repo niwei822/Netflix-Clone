@@ -37,6 +37,7 @@ class TitleCollectionViewCell: UICollectionViewCell {
             return
         }
         //print(url)
+        //loads and sets the image for the given UIImageView
         posterImageView.sd_setImage(with: url, completed: nil)
     }
 }

@@ -38,12 +38,11 @@ class HomeViewController: UIViewController {
         
         let headerView = HeroHeaderUIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 500))
         homeFeedTable.tableHeaderView = headerView
-        
-        getTrendingTv()
     }
     
     private func configureNavbar() {
         var image = UIImage(named: "netflix-logo")
+        //display an image as-is
         image = image?.withRenderingMode(.alwaysOriginal)
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: image, style: .done, target: self, action: nil)
         navigationItem.rightBarButtonItems = [
@@ -56,20 +55,9 @@ class HomeViewController: UIViewController {
     //called when the view's bounds change
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        //view.bounds let table view takes up the entire screen
         homeFeedTable.frame = view.bounds
     }
-    
-    private func getTrendingTv() {
-        APICaller.shared.getTrendingTv { results in
-            switch results {
-            case .success(let tv):
-                print(tv)
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
-    
 }
 
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
@@ -89,6 +77,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         }
         cell.delegate = self
         switch indexPath.section {
+            //case 0
         case Sections.TrendingMovies.rawValue:
             APICaller.shared.getTrendingMovies { result in
                 switch result {
@@ -147,7 +136,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 40
     }
-    
+    //display each section title
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         guard let header = view as? UITableViewHeaderFooterView else {return}
         header.textLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
@@ -158,16 +147,19 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sectionTitles[section]
     }
-    
+    //to custom navigation bar where the bar hides when the user scrolls down and becomes visible when they scroll up
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let defaultoffset = view.safeAreaInsets.top
         let offset = scrollView.contentOffset.y + defaultoffset
+        //navigation bar will only move up (i.e., become hidden)
         navigationController?.navigationBar.transform = .init(translationX: 0, y: min(0, -offset))
     }
 }
-
+//step2--passing in the TitlePreviewViewModel
+//objectis called when the user taps on a movie or TV show poster in the collection view. When this happens, the HomeViewController creates a TitlePreviewViewController and configures it with the selected movie or TV show's data.
 extension HomeViewController: CollectionViewTableViewCellDelegate {
     func collectionViewTableViewCelldidTapCell(_ cell: CollectionViewTableViewCell, viewModel: TitlePreviewViewModel) {
+        //ensures that this operation is performed on the main thread for UI updates
         DispatchQueue.main.async { [weak self] in
             let vc = TitlePreviewViewController()
             vc.configure(with: viewModel)

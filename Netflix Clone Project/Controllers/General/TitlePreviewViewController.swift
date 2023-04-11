@@ -10,6 +10,7 @@ import WebKit
 
 class TitlePreviewViewController: UIViewController {
     
+    //to display the title of the video
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -18,6 +19,7 @@ class TitlePreviewViewController: UIViewController {
         return label
     }()
     
+    //display an overview of the video
     private let overviewLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -37,6 +39,7 @@ class TitlePreviewViewController: UIViewController {
         return button
     }()
     
+    //WKWebView to display a YouTube video
     private let webView: WKWebView = {
         let webView = WKWebView()
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -57,6 +60,7 @@ class TitlePreviewViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
+    //to configure the view controller with the data from a TitlePreviewViewModel
     func configureConstraints() {
         let webViewContraints = [
             webView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),

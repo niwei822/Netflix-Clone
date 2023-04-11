@@ -24,14 +24,13 @@ class APICaller {
     func getTrendingMovies(completion: @escaping (Result<[Movie], Error>) -> Void) {
         guard let url = URL(string: "\(Constants.baseURL)/3/trending/movie/day?api_key=\(Constants.API_KEY)") else {return}
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
+            // If data is nil or error is not nil, return with failure.
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
-                
             } catch {
                 completion(.failure(APIerror.failedTogetData))
             }
@@ -45,7 +44,6 @@ class APICaller {
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
@@ -56,6 +54,7 @@ class APICaller {
         }
         task.resume()
     }
+    
     //https://api.themoviedb.org/3/movie/upcoming?api_key=<<api_key>>&language=en-US&page=1
     func getUpcomingMovies(completion: @escaping (Result<[Movie], Error>) -> Void) {
         guard let url = URL(string: "\(Constants.baseURL)/3/movie/upcoming?api_key=\(Constants.API_KEY)&language=en-US&page=1") else {return}
@@ -68,7 +67,6 @@ class APICaller {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
                 //print(results)
-                
             } catch {
                 completion(.failure(APIerror.failedTogetData))
             }
@@ -83,12 +81,10 @@ class APICaller {
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
                 //print(results)
-                
             } catch {
                 completion(.failure(APIerror.failedTogetData))
             }
@@ -103,12 +99,10 @@ class APICaller {
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
                 //print(results)
-                
             } catch {
                 completion(.failure(error))
             }
@@ -123,7 +117,6 @@ class APICaller {
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
                 completion(.success(results.results))
@@ -137,26 +130,27 @@ class APICaller {
     }
     
     func search(with query: String, completion: @escaping (Result<[Movie], Error>) -> Void) {
-       //https://api.themoviedb.org/3/search/movie?api_key={api_key}&query=Jack+Reacher
-        //used to encode the search term so that it can be safely included in a URL without causing issues such as invalid characters or injection attacks.
-        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {return}
-        guard let url = URL(string: "\(Constants.baseURL)/3/search/movie?api_key=\(Constants.API_KEY)&query=\(query)") else {return}
+        // Encode the search query so that it can be safely included in a URL.
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else { return }
+        // Build the URL for the search query using the TMDb API.
+        guard let url = URL(string: "\(Constants.baseURL)/3/search/movie?api_key=\(Constants.API_KEY)&query=\(query)") else { return }
+        // Create a data task to download data from the internet.
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
-            guard let data = data, error == nil else {
-                return
-            }
-            
+            // Ensure that there is data and no error before proceeding.
+            guard let data = data, error == nil else { return }
             do {
+                // Decode the response data into a TrendingMovieResponse object.
                 let results = try JSONDecoder().decode(TrendingMovieResponse.self, from: data)
+                // Call the completion closure with the array of Movie objects.
                 completion(.success(results.results))
-                //print(results)
-                
             } catch {
+                // Call the completion closure with the error object.
                 completion(.failure(error))
             }
         }
         task.resume()
     }
+
     
     //GET https://youtube.googleapis.com/youtube/v3/search?q=harry%20potter&key=[YOUR_API_KEY] HTTP/1.1
     func getMovie(with query: String, completion: @escaping (Result<VideoElement, Error>) -> Void)  {
@@ -166,12 +160,10 @@ class APICaller {
             guard let data = data, error == nil else {
                 return
             }
-            
             do {
                 let results = try JSONDecoder().decode(Youtube.self, from: data)
                 completion(.success(results.items[0]))
-                print(results)
-                
+                //print(results.items)
             } catch {
                 completion(.failure(error))
                 print(error.localizedDescription)

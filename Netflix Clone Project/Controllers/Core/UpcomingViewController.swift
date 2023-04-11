@@ -9,7 +9,7 @@ import UIKit
 
 class UpcomingViewController: UIViewController {
     
-    private var titles:[Movie] = [Movie]()
+    private var titles:[Movie] = []
     
     private let upcomingTable: UITableView = {
         
@@ -41,6 +41,7 @@ class UpcomingViewController: UIViewController {
         APICaller.shared.getUpcomingMovies { [weak self] result in
             switch result {
             case .success(let titles):
+                // Store the retrieved movies in the titles array and reload the table view
                 self?.titles = titles
                 DispatchQueue.main.async {
                     self?.upcomingTable.reloadData()
@@ -50,14 +51,13 @@ class UpcomingViewController: UIViewController {
             }
         }
     }
-
 }
 
 extension UpcomingViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return titles.count
     }
-    
+    // Configure the cell to display the movie's title and poster
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TitleTableViewCell.identifier, for: indexPath) as? TitleTableViewCell else {
             return UITableViewCell()

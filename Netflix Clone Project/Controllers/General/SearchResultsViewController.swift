@@ -13,6 +13,7 @@ class SearchResultsViewController: UIViewController {
     
     public let searchResultsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
+        //The itemSize is set to 1/3 of the screen width minus 10 points
         layout.itemSize = CGSize(width: UIScreen.main.bounds.width / 3 - 10, height: 200)
         layout.minimumInteritemSpacing = 0
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -34,9 +35,6 @@ class SearchResultsViewController: UIViewController {
         super.viewDidLayoutSubviews()
         searchResultsCollectionView.frame = view.bounds
     }
-    
-
-    
 }
 
 extension SearchResultsViewController: UICollectionViewDelegate, UICollectionViewDataSource {

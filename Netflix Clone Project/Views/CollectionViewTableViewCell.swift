@@ -7,6 +7,7 @@
 
 import UIKit
 
+//
 protocol CollectionViewTableViewCellDelegate: AnyObject {
     func collectionViewTableViewCelldidTapCell(_ cell: CollectionViewTableViewCell, viewModel: TitlePreviewViewModel)
 }
@@ -16,8 +17,8 @@ class CollectionViewTableViewCell: UITableViewCell {
     static let identifier = "CollectionViewTableViewCell"
     
     weak var delegate: CollectionViewTableViewCellDelegate?
-    
-    private var titles: [Movie] = [Movie]()
+    //Declare a private array property to store Movie objects
+    private var titles: [Movie] = []
     
     private let collectionView: UICollectionView = {
         
@@ -50,6 +51,7 @@ class CollectionViewTableViewCell: UITableViewCell {
     
     public func configure(with titles: [Movie]) {
         self.titles = titles
+        //UI updates always performed on the main thread
         DispatchQueue.main.async { [weak self] in
             self?.collectionView.reloadData()
         }
@@ -57,14 +59,16 @@ class CollectionViewTableViewCell: UITableViewCell {
 }
 
 extension CollectionViewTableViewCell: UICollectionViewDelegate, UICollectionViewDataSource {
-    
+    //called by the collection view to retrieve the cell that should be displayed at the given index path
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TitleCollectionViewCell.identifier, for: indexPath) as? TitleCollectionViewCell else {
             return UICollectionViewCell()
         }
+        // Get the poster path from the Movie object at the given index path
         guard let model = titles[indexPath.row].poster_path else {
             return UICollectionViewCell()
         }
+        //fetch the image data from the URL, and then setting the image property of the cell's posterImageView to the resulting image
         cell.configure(with: model)
         return cell
     }
@@ -73,6 +77,7 @@ extension CollectionViewTableViewCell: UICollectionViewDelegate, UICollectionVie
         return titles.count
     }
     
+    // step1--Handle the selection of an item at the given index path
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         
@@ -80,14 +85,17 @@ extension CollectionViewTableViewCell: UICollectionViewDelegate, UICollectionVie
         guard let titleName = title.original_title ?? title.name else {
             return
         }
-        
+        //The use of [weak self] means that self is an optional because it could have been deallocated by the time the closure is executed. By using self?, the code safely unwraps the optional, and ensures that the closure doesn't try to access a deallocated instance of CollectionViewTableViewCell.
         APICaller.shared.getMovie(with: titleName + "trailer") { [weak self] result in
             switch result {
             case .success(let videoElement):
                 let title = self?.titles[indexPath.row]
                 guard let titleOverview = title?.overview else {return}
+                // Create a view model for the title preview using the extracted data
+                //to create a strong reference to self,ensure self will not be deallocated before delegate finish excuting.
                 guard let strongSelf = self else {return}
                 let viewModel = TitlePreviewViewModel(title: titleName, youtubeView: videoElement, titleOverview: titleOverview)
+                // Notify the delegate that the cell was tapped with the title preview view model
                 self?.delegate?.collectionViewTableViewCelldidTapCell(strongSelf, viewModel: viewModel)
             case .failure(let error):
                 print(error.localizedDescription)

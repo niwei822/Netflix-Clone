@@ -72,7 +72,7 @@ class HeroHeaderUIView: UIView {
         NSLayoutConstraint.activate(playButtonContraints)
         NSLayoutConstraint.activate(downloadButtonContraints)
     }
-    
+    //layoutSubviews is called whenever the layout of the view is updated.
     override func layoutSubviews() {
         super.layoutSubviews()
         heroImageView.frame = bounds

@@ -9,7 +9,7 @@ import UIKit
 
 class SearchViewController: UIViewController {
     
-    private var titles:[Movie] = [Movie]()
+    private var titles:[Movie] = []
     
     private let discoverTable: UITableView = {
         
@@ -42,7 +42,7 @@ class SearchViewController: UIViewController {
         navigationItem.searchController = searchController
         navigationController?.navigationBar.tintColor = .white
         fetchDiscoverMovies()
-        
+        //SearchViewController will be responsible for updating the search results based on the user's input.
         searchController.searchResultsUpdater = self
     }
     
@@ -88,6 +88,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
 }
 
 extension SearchViewController: UISearchResultsUpdating {
+    //is called when the user types something into the search bar of the searchController
     func updateSearchResults(for searchController: UISearchController) {
         let searchBar = searchController.searchBar
         guard let query = searchBar.text,
