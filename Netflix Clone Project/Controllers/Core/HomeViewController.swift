@@ -17,6 +17,7 @@ enum Sections: Int {
 
 class HomeViewController: UIViewController {
     
+    private var titles:[Movie] = []
     private var randomMovie: Movie?
     private var headerView: HeroHeaderUIView?
     
@@ -42,6 +43,7 @@ class HomeViewController: UIViewController {
         
         headerView = HeroHeaderUIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 500))
         homeFeedTable.tableHeaderView = headerView
+        headerView?.delegate = self
        
     }
     
@@ -153,7 +155,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40
+        return 30
     }
     //display each section title
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
@@ -173,10 +175,56 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         //navigation bar will only move up (i.e., become hidden)
         navigationController?.navigationBar.transform = .init(translationX: 0, y: min(0, -offset))
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let title = titles[indexPath.row]
+        guard let titleName = title.original_title ?? title.name else {
+            return
+        }
+        //The use of [weak self] means that self is an optional because it could have been deallocated by the time the closure is executed. By using self?, the code safely unwraps the optional, and ensures that the closure doesn't try to access a deallocated instance of CollectionViewTableViewCell.
+        APICaller.shared.getMovie(with: titleName + "trailer") { [weak self] result in
+            switch result {
+            case .success(let videoElement):
+                DispatchQueue.main.async {
+                    let vc = TitlePreviewViewController()
+                    vc.configure(with: TitlePreviewViewModel(title: titleName, youtubeView: videoElement, titleOverview: title.overview ?? ""))
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
 }
 //step2--passing in the TitlePreviewViewModel
 //objectis called when the user taps on a movie or TV show poster in the collection view. When this happens, the HomeViewController creates a TitlePreviewViewController and configures it with the selected movie or TV show's data.
-extension HomeViewController: CollectionViewTableViewCellDelegate {
+extension HomeViewController: CollectionViewTableViewCellDelegate, HeroHeaderUIViewDelegate {
+    func HeroHeaderUIViewldidTapPlayButton() {
+       // print("&&&&&&&&")
+        guard let titleName = randomMovie?.original_title ?? randomMovie?.name else {
+            return
+        }
+        //The use of [weak self] means that self is an optional because it could have been deallocated by the time the closure is executed. By using self?, the code safely unwraps the optional, and ensures that the closure doesn't try to access a deallocated instance of CollectionViewTableViewCell.
+        APICaller.shared.getMovie(with: titleName + "trailer") { [weak self] result in
+            switch result {
+            case .success(let videoElement):
+                DispatchQueue.main.async { [self] in
+                    let vc = TitlePreviewViewController()
+                    vc.configure(with: TitlePreviewViewModel(title: titleName, youtubeView: videoElement, titleOverview: self?.randomMovie?.overview ?? ""))
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+
+    
+    
+
+  
     func collectionViewTableViewCelldidTapCell(_ cell: CollectionViewTableViewCell, viewModel: TitlePreviewViewModel) {
         //ensures that this operation is performed on the main thread for UI updates
         DispatchQueue.main.async { [weak self] in

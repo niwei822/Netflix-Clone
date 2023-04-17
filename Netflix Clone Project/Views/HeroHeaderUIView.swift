@@ -7,7 +7,13 @@
 
 import UIKit
 
+protocol HeroHeaderUIViewDelegate: AnyObject {
+    func HeroHeaderUIViewldidTapPlayButton()
+}
+
 class HeroHeaderUIView: UIView {
+    
+    weak var delegate: HeroHeaderUIViewDelegate?
     
     private let downloadButton: UIButton = {
         let button = UIButton()
@@ -26,6 +32,8 @@ class HeroHeaderUIView: UIView {
         button.layer.borderWidth = 1
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 5
+        button.addTarget(self, action: #selector(didTapPlayButton), for: .touchUpInside)
+        
         return button
     }()
     
@@ -77,9 +85,20 @@ class HeroHeaderUIView: UIView {
     public func configure(with model: TitleViewModel) {
         guard let url = URL(string: "https://image.tmdb.org/t/p/w500\(model.posterURL)") else {
             return}
+        //print("****************************")
+        let title = model.titleName
+        print(title)
         heroImageView.sd_setImage(with: url, completed: nil)
         print(url)
     }
+    
+    @objc private func didTapPlayButton() {
+
+        self.delegate?.HeroHeaderUIViewldidTapPlayButton()
+
+        }
+    
+    
     
     override func layoutSubviews() {
         super.layoutSubviews()
